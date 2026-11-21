@@ -1,0 +1,44 @@
+[package]
+name = "wraith"
+version = "0.12.4"
+edition = "2021"
+description = "Wraith VPN client for Linux (Xray)"
+license = "GPL-3.0-or-later"
+
+[[bin]]
+name = "wraith"
+path = "src/main.rs"
+
+[dependencies]
+eframe = { version = "0.33", default-features = false, features = ["glow", "default_fonts", "wayland", "x11"] }
+egui = "0.33"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+ureq = { version = "2", features = ["json"] }
+sha2 = "0.10"
+base64 = "0.22"
+regex = "1"
+idna = "1"
+getrandom = "0.2"
+url = "2"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+webpki-roots = "0.26"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+png = "0.17"
+
+libc = "0.2"
+# Tray icon over D-Bus StatusNotifierItem (KDE, GNOME with AppIndicator, XFCE…): no GTK needed.
+ksni = "0.2"
+arboard = { version = "3", default-features = false, features = ["wayland-data-control"] }
+chacha20poly1305 = "0.10"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 4
+strip = true
+panic = "unwind"
+
+[features]
+# Builds wraith-setup: the app plus the release archive it installs (path in WRAITH_PAYLOAD).
+setup = []

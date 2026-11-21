@@ -1,0 +1,35 @@
+# Maintainer: trinity13338 <https://github.com/trinity13338>
+pkgname=wraith-vpn-bin
+pkgver=0.12.4
+pkgrel=1
+pkgdesc="Xray VPN client (VLESS, VMess, Trojan, Shadowsocks, Hysteria2, WireGuard) with TUN and system proxy (prebuilt)"
+arch=('x86_64')
+url="https://github.com/trinity13338/Wraith-linux"
+license=('GPL-3.0-or-later' 'MPL-2.0')
+depends=('gcc-libs' 'glibc' 'dbus' 'libcap' 'polkit' 'libxkbcommon' 'wayland' 'libglvnd' 'hicolor-icon-theme')
+optdepends=('libx11: X11 sessions' 'libxcursor: X11 sessions' 'libxrandr: X11 sessions' 'libxi: X11 sessions'
+            'kconfig: system proxy on KDE Plasma' 'gsettings-desktop-schemas: system proxy on GNOME'
+            'xdg-utils: opening links and folders')
+provides=('wraith' 'wraith-vpn')
+conflicts=('wraith-vpn')
+install=wraith-vpn.install
+options=('!strip' '!debug')
+source=("Wraith-Linux-$pkgver-x64.zip::$url/releases/download/linux-v$pkgver/Wraith-Linux-$pkgver-x64.zip")
+sha256sums=('57dc055e993df9f3dcfef5cfee5f57f5046cdea99d2e76e1cfb405072d0ac75a')
+
+package() {
+  cd "$srcdir/Wraith-Linux-$pkgver-x64"
+  install -Dm755 wraith "$pkgdir/opt/wraith/wraith"
+  install -Dm755 xray "$pkgdir/opt/wraith/xray"
+  install -Dm644 geoip.dat "$pkgdir/opt/wraith/geoip.dat"
+  install -Dm644 geosite.dat "$pkgdir/opt/wraith/geosite.dat"
+  # pacman owns these files: Wraith leaves updates and removal to it.
+  touch "$pkgdir/opt/wraith/wraith.packaged"
+  install -dm755 "$pkgdir/usr/bin"
+  ln -s /opt/wraith/wraith "$pkgdir/usr/bin/wraith"
+  install -Dm644 wraith.desktop "$pkgdir/usr/share/applications/wraith.desktop"
+  install -Dm644 wraith.png "$pkgdir/usr/share/icons/hicolor/256x256/apps/wraith.png"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 THIRD_PARTY_NOTICES.md "$pkgdir/usr/share/licenses/$pkgname/THIRD_PARTY_NOTICES.md"
+  install -Dm644 LICENSE-Xray.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE-Xray"
+}

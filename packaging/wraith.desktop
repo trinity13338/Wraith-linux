@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Wraith
+GenericName=VPN client
+GenericName[ru]=VPN-клиент
+Comment=Xray VPN client
+Comment[ru]=VPN-клиент на ядре Xray
+Exec=wraith
+Icon=wraith
+Terminal=false
+Categories=Network;
+Keywords=vpn;xray;vless;proxy;
+StartupWMClass=wraith

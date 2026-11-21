@@ -1,0 +1,8 @@
+# TUN needs the bundled Xray core to create the interface and its routes and to bind its own
+# sockets to the physical interface. Wraith itself runs as the user, without these rights.
+post_install() {
+    setcap cap_net_admin,cap_net_raw,cap_net_bind_service+ep /opt/wraith/xray
+}
+post_upgrade() {
+    post_install
+}
