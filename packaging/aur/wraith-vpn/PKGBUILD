@@ -19,7 +19,7 @@ options=('!lto')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/linux-v$pkgver.tar.gz")
 source_x86_64=("Xray-linux-64-$_xrayver.zip::https://github.com/XTLS/Xray-core/releases/download/v$_xrayver/Xray-linux-64.zip")
 source_aarch64=("Xray-linux-arm64-v8a-$_xrayver.zip::https://github.com/XTLS/Xray-core/releases/download/v$_xrayver/Xray-linux-arm64-v8a.zip")
-sha256sums=('SKIP')
+sha256sums=('7405db0ba17384fdb572acf7a230d5ff5af5377d7cba0ce640e17d39e54dfb8c')
 sha256sums_x86_64=('b651f7e1d9966ee2c1b1ee1bf8b52c72771824d3065dce96bbc8bcc19ed95f82')
 sha256sums_aarch64=('64ed6858982a7f5eb85d88b811089063bd4f17561f4c8f44e0f1dc8e6f6430be')
 

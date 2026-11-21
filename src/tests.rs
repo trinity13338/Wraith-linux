@@ -355,3 +355,12 @@ fn export_icon() {
       enc.write_header().unwrap().write_image_data(&crate::ui::icon::rgba(256)).unwrap(); }
     std::fs::write(path, out).unwrap();
 }
+
+/// Against the real GitHub API: the published release is found and carries a verified Linux archive.
+#[test]
+#[ignore]
+fn live_updater_sees_the_published_release() {
+    let r = crate::subs::updater::check().unwrap();
+    eprintln!("latest {} {} {}", r.version, r.url, r.sha256);
+    assert!(!r.url.is_empty() && r.sha256.len() == 64);
+}
