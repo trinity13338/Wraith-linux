@@ -58,22 +58,33 @@ pub fn read() -> Obj {
 }
 pub fn clear() { PENDING.lock().unwrap().take(); let _ = std::fs::remove_file(file()); }
 
-/// (day of month label, total bytes) for the last `n` days, oldest first.
+/// (day of month label, total bytes) for the last `n` days, oldest first (local calendar days).
 pub fn last_days(history: &Obj, n: i64) -> Vec<(String, i64)> {
-    let today = crate::util::unix_now() + local_offset();
+    let today = crate::util::local_time().date;
+    let p = |r: std::ops::Range<usize>| today.get(r).and_then(|v| v.parse::<i64>().ok()).unwrap_or(1);
+    let base = days_from_civil(p(0..4), p(5..7), p(8..10));
     (0..n).rev().map(|back| {
-        let (y, m, d) = crate::util::civil_of((today - back * 86_400).div_euclid(86_400));
+        let (y, m, d) = civil_from_days(base - back);
         let key = format!("{y:04}-{m:02}-{d:02}");
         let a = history.a(&key).cloned().unwrap_or_default();
         let total = a.first().and_then(|x| x.as_i64()).unwrap_or(0) + a.get(1).and_then(|x| x.as_i64()).unwrap_or(0);
         (format!("{d:02}"), total)
     }).collect()
 }
-fn local_offset() -> i64 {
-    let t = unsafe { libc::time(std::ptr::null_mut()) };
-    let mut tm: libc::tm = unsafe { std::mem::zeroed() };
-    unsafe { libc::localtime_r(&t, &mut tm) };
-    tm.tm_gmtoff
+/// Days since 1970-01-01 for a calendar date, and back (H. Hinnant's algorithms).
+fn days_from_civil(y: i64, m: i64, d: i64) -> i64 {
+    let y = if m <= 2 { y - 1 } else { y };
+    let era = y.div_euclid(400); let yoe = y - era * 400;
+    let doy = (153 * (if m > 2 { m - 3 } else { m + 9 }) + 2) / 5 + d - 1;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    era * 146_097 + doe - 719_468
+}
+fn civil_from_days(z: i64) -> (i64, i64, i64) {
+    let z = z + 719_468; let era = z.div_euclid(146_097); let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100); let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1; let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    (if m <= 2 { yoe + era * 400 + 1 } else { yoe + era * 400 }, m, d)
 }
 
 // ------------------------------------------------------------------ exit IP
@@ -139,3 +150,14 @@ pub fn fetch(settings: &Obj) -> Exit {
 
 #[cfg(test)]
 pub fn set_test_exit(ip: &str, country: &str, delay: i64) { *EXIT.lock().unwrap() = Some(Exit { ip: ip.into(), country: country.into(), delay }); }
+
+#[cfg(test)]
+mod calendar {
+    #[test]
+    fn days_round_trip_across_months_and_leap_years() {
+        assert_eq!(super::days_from_civil(1970, 1, 1), 0);
+        assert_eq!(super::civil_from_days(super::days_from_civil(2024, 3, 1) - 1), (2024, 2, 29));
+        assert_eq!(super::civil_from_days(super::days_from_civil(2026, 1, 1) - 1), (2025, 12, 31));
+        for z in -800..20_000 { let (y, m, d) = super::civil_from_days(z); assert_eq!(super::days_from_civil(y, m, d), z); }
+    }
+}

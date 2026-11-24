@@ -18,7 +18,6 @@ pub fn date_of(unix: i64) -> String {
     let (y, m, d) = civil(days);
     format!("{d:02}.{m:02}.{y}")
 }
-pub fn civil_of(days: i64) -> (i64, u32, u32) { civil(days) }
 fn civil(z: i64) -> (i64, u32, u32) {
     let z = z + 719_468; let era = z.div_euclid(146_097); let doe = z - era * 146_097;
     let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365; let y = yoe + era * 400;
