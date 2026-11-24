@@ -12,6 +12,7 @@ mod model;
 mod pinger;
 mod routing;
 mod setup;
+mod stats;
 mod store;
 mod subs;
 mod ui;
@@ -62,7 +63,7 @@ fn main() -> eframe::Result<()> {
 fn run_window() -> eframe::Result<()> {
     let icon = egui::IconData { rgba: ui::icon::rgba(64), width: 64, height: 64 };
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_title(ui::TITLE).with_app_id(ui::APP_ID).with_inner_size([1140.0, 760.0]).with_min_inner_size([760.0, 560.0]).with_icon(std::sync::Arc::new(icon)),
+        viewport: egui::ViewportBuilder::default().with_title(ui::TITLE).with_app_id(ui::APP_ID).with_inner_size([980.0, 860.0]).with_min_inner_size([480.0, 600.0]).with_icon(std::sync::Arc::new(icon)),
         centered: true,
         ..Default::default()
     };
@@ -86,8 +87,8 @@ fn wait_signals(set: libc::sigset_t) {
     std::process::exit(0);
 }
 
-/// Debug builds only: sample servers for UI review.
-#[cfg(debug_assertions)]
+/// Debug builds and tests only: sample servers for UI review.
+#[cfg(any(debug_assertions, test))]
 fn demo() {
     if !store::get().profiles.is_empty() { return; }
     let sub = model::Subscription { id: "demo".into(), name: "My VPN Provider".into(), url: "https://example.com/sub".into(), updated: util::unix_now() - 3600,

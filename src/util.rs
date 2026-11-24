@@ -18,6 +18,7 @@ pub fn date_of(unix: i64) -> String {
     let (y, m, d) = civil(days);
     format!("{d:02}.{m:02}.{y}")
 }
+pub fn civil_of(days: i64) -> (i64, u32, u32) { civil(days) }
 fn civil(z: i64) -> (i64, u32, u32) {
     let z = z + 719_468; let era = z.div_euclid(146_097); let doe = z - era * 146_097;
     let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365; let y = yoe + era * 400;
@@ -237,3 +238,47 @@ pub fn my_uid() -> u32 { unsafe { libc::getuid() } }
 pub fn home() -> PathBuf { std::env::var_os("HOME").map(PathBuf::from).unwrap_or_else(|| PathBuf::from("/tmp")) }
 pub fn config_home() -> PathBuf { std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from).filter(|p| p.is_absolute()).unwrap_or_else(|| home().join(".config")) }
 pub fn data_home() -> PathBuf { std::env::var_os("XDG_DATA_HOME").map(PathBuf::from).filter(|p| p.is_absolute()).unwrap_or_else(|| home().join(".local/share")) }
+
+/// The desktop's file dialog (kdialog on KDE, else zenity). None when cancelled or no dialog tool exists.
+/// Blocks: call it from a background thread.
+pub fn file_dialog(save: bool, title: &str, name: &str, filter: &[&str]) -> Result<Option<PathBuf>, String> {
+    let kde = std::env::var("XDG_CURRENT_DESKTOP").map(|d| d.to_ascii_uppercase().contains("KDE")).unwrap_or(false);
+    let start = home().join(name);
+    let patterns = filter.join(" ");
+    let try_kdialog = || -> Option<Command> {
+        which("kdialog")?;
+        let mut c = Command::new("kdialog");
+        c.arg("--title").arg(title).arg(if save { "--getsavefilename" } else { "--getopenfilename" }).arg(&start);
+        if !patterns.is_empty() { c.arg(&patterns); }
+        Some(c)
+    };
+    let try_zenity = || -> Option<Command> {
+        which("zenity")?;
+        let mut c = Command::new("zenity");
+        c.arg("--file-selection").arg(format!("--title={title}"));
+        if save { c.arg("--save").arg(format!("--filename={}", start.display())); }
+        if !patterns.is_empty() { c.arg(format!("--file-filter={patterns}")); }
+        Some(c)
+    };
+    let cmd = if kde { try_kdialog().or_else(try_zenity) } else { try_zenity().or_else(try_kdialog) };
+    let Some(mut cmd) = cmd else { return Err(crate::tr!("Не найден диалог выбора файла: установите zenity или kdialog.", "No file dialog found: install zenity or kdialog.").into()) };
+    let out = cmd.stdin(std::process::Stdio::null()).stderr(std::process::Stdio::null()).output().map_err(|e| e.to_string())?;
+    let path = String::from_utf8_lossy(&out.stdout).trim().to_string();
+    if !out.status.success() || path.is_empty() { return Ok(None); }
+    Ok(Some(PathBuf::from(path)))
+}
+
+/// Local "dd.MM, HH:mm" for a unix time.
+pub fn local_short(unix: i64) -> String {
+    let t = unix as libc::time_t;
+    let mut tm: libc::tm = unsafe { std::mem::zeroed() };
+    unsafe { libc::localtime_r(&t, &mut tm) };
+    format!("{:02}.{:02}, {:02}:{:02}", tm.tm_mday, tm.tm_mon + 1, tm.tm_hour, tm.tm_min)
+}
+/// The local hour (0–23), for the greeting.
+pub fn local_hour() -> i32 {
+    let t = unsafe { libc::time(std::ptr::null_mut()) };
+    let mut tm: libc::tm = unsafe { std::mem::zeroed() };
+    unsafe { libc::localtime_r(&t, &mut tm) };
+    tm.tm_hour
+}

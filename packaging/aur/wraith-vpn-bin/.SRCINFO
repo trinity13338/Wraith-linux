@@ -1,6 +1,6 @@
 pkgbase = wraith-vpn-bin
 	pkgdesc = Xray VPN client (VLESS, VMess, Trojan, Shadowsocks, Hysteria2, WireGuard) with TUN and system proxy (prebuilt)
-	pkgver = 0.12.4
+	pkgver = 0.13.0
 	pkgrel = 1
 	url = https://github.com/trinity13338/Wraith-linux
 	install = wraith-vpn.install
@@ -28,7 +28,7 @@ pkgbase = wraith-vpn-bin
 	conflicts = wraith-vpn
 	options = !strip
 	options = !debug
-	source = Wraith-Linux-0.12.4-x64.zip::https://github.com/trinity13338/Wraith-linux/releases/download/linux-v0.12.4/Wraith-Linux-0.12.4-x64.zip
-	sha256sums = 57dc055e993df9f3dcfef5cfee5f57f5046cdea99d2e76e1cfb405072d0ac75a
+	source = Wraith-Linux-0.13.0-x64.zip::https://github.com/trinity13338/Wraith-linux/releases/download/linux-v0.13.0/Wraith-Linux-0.13.0-x64.zip
+	sha256sums = c343269b44939c532789895af502c615179e4e76e6170215324534c85b996788
 
 pkgname = wraith-vpn-bin

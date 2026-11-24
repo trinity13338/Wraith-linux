@@ -5,9 +5,11 @@
 //! event loop, and all state lives outside the window.
 
 pub mod app;
+pub mod backdrop;
 pub mod dialog;
 pub mod flags;
 pub mod icon;
+pub mod icons;
 pub mod theme;
 pub mod widgets;
 

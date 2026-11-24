@@ -1,6 +1,6 @@
 [package]
 name = "wraith"
-version = "0.12.4"
+version = "0.13.0"
 edition = "2021"
 description = "Wraith VPN client for Linux (Xray)"
 license = "GPL-3.0-or-later"
@@ -25,6 +25,8 @@ rustls = { version = "0.23", default-features = false, features = ["ring", "std"
 webpki-roots = "0.26"
 zip = { version = "2", default-features = false, features = ["deflate"] }
 png = "0.17"
+# Background photo (JPEG, PNG), as on Android.
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
 
 libc = "0.2"
 # Tray icon over D-Bus StatusNotifierItem (KDE, GNOME with AppIndicator, XFCE…): no GTK needed.
