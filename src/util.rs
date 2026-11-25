@@ -178,7 +178,7 @@ pub fn clipboard_text() -> Option<String> {
 /// Installed by the setup into /opt/wraith (marker written by the installer).
 pub fn installed() -> bool { app_dir().join("wraith.installed").exists() }
 /// Installed from a distribution package (AUR): pacman owns the files, so updates and removal go through it.
-pub fn packaged() -> bool { app_dir().join("wraith.packaged").exists() }
+pub fn packaged() -> bool { (cfg!(test) && std::env::var_os("WRAITH_PACKAGED").is_some()) || app_dir().join("wraith.packaged").exists() }
 pub const PACKAGE_HINT_RU: &str = "Wraith установлен из пакета. Обновляйте его пакетным менеджером (например, yay -Syu), удаляйте — через pacman -R.";
 pub const PACKAGE_HINT_EN: &str = "Wraith was installed from a package. Update it with the package manager (for example yay -Syu), remove it with pacman -R.";
 

@@ -1434,10 +1434,21 @@ impl App {
                         ui.add_space(8.0);
                         ui.add(egui::ProgressBar::new(if total > 0 { done as f32 / total as f32 } else { 0.0 }).fill(p.accent).text(crate::trf!("{} из {}", "{} of {}", util::bytes(done as i64), util::bytes(total as i64))));
                     }
+                    // A package install is updated by the package manager: say so in its own wrapped paragraph
+                    // (a label in the button row does not wrap and pushed the dialog off the window).
+                    let packaged = util::packaged();
+                    if packaged {
+                        ui.add_space(10.0);
+                        Frame::new().fill(p.accent_soft).corner_radius(CornerRadius::same(14)).inner_margin(Margin::same(12)).show(ui, |ui| {
+                            ui.set_width(ui.available_width());
+                            ui.add(egui::Label::new(RichText::new(crate::tr!(util::PACKAGE_HINT_RU, util::PACKAGE_HINT_EN)).color(p.text)).wrap());
+                        });
+                    }
                     ui.add_space(14.0);
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        if util::packaged() { ui.label(RichText::new(crate::tr!(util::PACKAGE_HINT_RU, util::PACKAGE_HINT_EN)).color(p.muted)); }
-                        else if progress.is_none() && text_btn(ui, &p, crate::tr!("Скачать и установить", "Download and install"), p.accent).clicked() {
+                        if packaged {
+                            if text_btn(ui, &p, crate::tr!("Понятно", "OK"), p.accent).clicked() { keep = false; }
+                        } else if progress.is_none() && text_btn(ui, &p, crate::tr!("Скачать и установить", "Download and install"), p.accent).clicked() {
                             let r = release.clone(); let shared = self.shared.clone();
                             shared.lock().unwrap().download = Some((0, r.size.max(0) as u64));
                             std::thread::spawn(move || {
@@ -1449,7 +1460,7 @@ impl App {
                                 }
                             });
                         }
-                        if text_btn(ui, &p, crate::tr!("Позже", "Later"), p.muted).clicked() { keep = false; }
+                        if !packaged && text_btn(ui, &p, crate::tr!("Позже", "Later"), p.muted).clicked() { keep = false; }
                     });
                 }
             }
@@ -1635,6 +1646,7 @@ impl App {
             "settings" => self.in_settings = true,
             "import" => { self.tab = Tab::Home; self.modal = Some(Modal::Import { text: String::new() }); }
             "sheet" => { let p = self.profiles[0].clone(); self.tab = Tab::Servers; self.server_sheet(&p); }
+            "update" => { self.in_settings = true; self.modal = Some(Modal::Update { release: Release { version: "0.13.2".into(), notes: "- Вместо «Доброе утро / день / вечер» — короткие фразы, меняются каждые 30 минут\n- Время, IP и скорость на главной всегда по центру своих ячеек\n- Внешний IP показывается по IPv4, даже если у сервера есть IPv6; если выключить «Показывать IP и пинг», вместо них написано «Скрыто»\n- Подписки сворачиваются стрелкой; у серверов больше нет «пулов»\n- Маршрутизация всегда по правилам\n- Настройки без пояснений\n- По умолчанию: цвет интерфейса — акцент системы\n- Значок в трее подстраивается под панель".into(), available: true, ..Default::default() } }); }
             page => { self.in_settings = true; self.pages.push(match page { "routing" => Page::Routing, "tunnel" => Page::Tunnel, "subscriptions" => Page::Subscriptions, "ping" => Page::Ping, "logs" => Page::Logs, _ => Page::Appearance }); }
         }
     }
