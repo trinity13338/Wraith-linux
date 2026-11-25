@@ -1,6 +1,6 @@
 # Maintainer: trinity13338 <https://github.com/trinity13338>
 pkgname=wraith-vpn-bin
-pkgver=0.13.1
+pkgver=0.13.2
 pkgrel=1
 pkgdesc="Xray VPN client (VLESS, VMess, Trojan, Shadowsocks, Hysteria2, WireGuard) with TUN and system proxy (prebuilt)"
 arch=('x86_64')
@@ -15,7 +15,7 @@ conflicts=('wraith-vpn')
 install=wraith-vpn.install
 options=('!strip' '!debug')
 source=("Wraith-Linux-$pkgver-x64.zip::$url/releases/download/linux-v$pkgver/Wraith-Linux-$pkgver-x64.zip")
-sha256sums=('50928065cce738f7b4ec039fb7e2fdc32c5ea785172c016bdf6815305df48a56')
+sha256sums=('bd649bbd0800a664d0d71b0481ca5465ef168e8b0cbf463accf353766966e02e')
 
 package() {
   cd "$srcdir/Wraith-Linux-$pkgver-x64"
