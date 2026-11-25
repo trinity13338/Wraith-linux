@@ -61,7 +61,7 @@ fn main() -> eframe::Result<()> {
 }
 
 fn run_window() -> eframe::Result<()> {
-    let icon = egui::IconData { rgba: ui::icon::rgba(64), width: 64, height: 64 };
+    let icon = ui::app_icon(128);
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_title(ui::TITLE).with_app_id(ui::APP_ID).with_inner_size([980.0, 860.0]).with_min_inner_size([480.0, 600.0]).with_icon(std::sync::Arc::new(icon)),
         centered: true,

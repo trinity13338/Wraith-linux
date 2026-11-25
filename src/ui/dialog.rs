@@ -32,7 +32,7 @@ impl eframe::App for Dialog {
 pub fn ask(text: &str, question: bool) -> bool {
     let answer = Arc::new(Mutex::new(false));
     let a2 = answer.clone(); let text = text.to_string();
-    let icon = egui::IconData { rgba: super::icon::rgba(64), width: 64, height: 64 };
+    let icon = super::app_icon(128);
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_title(super::TITLE).with_app_id(super::APP_ID).with_inner_size([460.0, 220.0]).with_resizable(false).with_icon(Arc::new(icon)),
         centered: true, ..Default::default()

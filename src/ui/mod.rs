@@ -114,16 +114,21 @@ pub mod tray {
         fn id(&self) -> String { super::APP_ID.into() }
         fn title(&self) -> String { "Wraith".into() }
         fn icon_name(&self) -> String { String::new() }
+        /// The mark alone, light on a dark panel and dark on a light one, in every size panels ask for.
         fn icon_pixmap(&self) -> Vec<ksni::Icon> {
-            [22u32, 32, 48, 64].iter().map(|&s| {
+            let rgb = if super::dark_panel() { [0xF5, 0xF2, 0xFA] } else { [0x1C, 0x1B, 0x22] };
+            [16u32, 22, 24, 32, 48, 64].iter().map(|&s| {
                 // RGBA → ARGB32 in network byte order.
-                let data = super::icon::rgba(s).chunks(4).flat_map(|p| [p[3], p[0], p[1], p[2]]).collect();
+                let data = super::icon::mark(s, rgb).chunks(4).flat_map(|p| [p[3], p[0], p[1], p[2]]).collect();
                 ksni::Icon { width: s as i32, height: s as i32, data }
             }).collect()
         }
         fn tool_tip(&self) -> ksni::ToolTip {
             let st = crate::core::status();
-            let text = match st.state { crate::core::State::Connected => crate::trf!("Подключено · {}", "Connected · {}", crate::ui::widgets::display_name(&st.profile_name)), _ => crate::tr!("Не подключено", "Not connected").into() };
+            let text = match st.state {
+                crate::core::State::Connected => crate::trf!("Подключено · {}\n↓ {}/с  ↑ {}/с", "Connected · {}\n↓ {}/s  ↑ {}/s", crate::ui::widgets::display_name(&st.profile_name), crate::util::bytes(st.rx_rate), crate::util::bytes(st.tx_rate)),
+                _ => crate::tr!("Не подключено", "Not connected").into(),
+            };
             ksni::ToolTip { title: "Wraith".into(), description: text, ..Default::default() }
         }
         // Left click: the window, like the Windows tray icon.
@@ -153,4 +158,33 @@ pub mod tray {
         // The tooltip follows the connection state.
         std::thread::spawn(move || loop { std::thread::sleep(std::time::Duration::from_secs(2)); handle.update(|_| {}); });
     }
+}
+
+/// The panel (tray) is dark: GNOME's top bar always is; KDE and others follow the colour scheme.
+pub fn dark_panel() -> bool {
+    let desktop = std::env::var("XDG_CURRENT_DESKTOP").unwrap_or_default().to_ascii_uppercase();
+    if ["GNOME", "UNITY", "PANTHEON", "BUDGIE"].iter().any(|d| desktop.contains(d)) { return true; }
+    if let Ok(text) = std::fs::read_to_string(crate::util::config_home().join("kdeglobals")) {
+        // Plasma panels use the Window colours of the scheme.
+        let mut in_window = false;
+        for line in text.lines() {
+            let l = line.trim();
+            if l.starts_with('[') { in_window = l == "[Colors:Window]"; continue; }
+            if in_window { if let Some(rgb) = l.strip_prefix("BackgroundNormal=") {
+                let c: Vec<f32> = rgb.split(',').filter_map(|x| x.trim().parse().ok()).collect();
+                if c.len() >= 3 { return 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2] < 128.0; }
+            } }
+        }
+    }
+    match crate::util::output("gsettings", &["get", "org.gnome.desktop.interface", "color-scheme"]) {
+        Some(v) if v.contains("prefer-light") => false,
+        Some(v) if v.contains("default") => !crate::util::output("gsettings", &["get", "org.gnome.desktop.interface", "gtk-theme"]).map(|t| !t.to_ascii_lowercase().contains("dark")).unwrap_or(false),
+        _ => true,
+    }
+}
+
+/// The app icon in the interface's accent (the system accent by default), for windows and menus.
+pub fn app_icon(size: u32) -> egui::IconData {
+    let [r, g, b, _] = theme::accent_color().to_srgba_unmultiplied();
+    egui::IconData { rgba: icon::tile(size, [0x0B, 0x0A, 0x10], [r, g, b]), width: size, height: size }
 }

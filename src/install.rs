@@ -79,11 +79,30 @@ fn desktop_dir() -> PathBuf {
     util::output("xdg-user-dir", &["DESKTOP"]).map(PathBuf::from).filter(|p| p.is_absolute() && p != &util::home()).unwrap_or_else(|| util::home().join("Desktop"))
 }
 fn desktop_shortcut() -> PathBuf { desktop_dir().join("wraith.desktop") }
-fn icon_png() -> Vec<u8> {
+fn icon_png() -> Vec<u8> { png_of(&crate::ui::icon::rgba(256), 256) }
+fn png_of(rgba: &[u8], size: u32) -> Vec<u8> {
     let mut out = vec![];
-    { let mut enc = png::Encoder::new(&mut out, 256, 256); enc.set_color(png::ColorType::Rgba); enc.set_depth(png::BitDepth::Eight);
-      if let Ok(mut w) = enc.write_header() { let _ = w.write_image_data(&crate::ui::icon::rgba(256)); } }
+    { let mut enc = png::Encoder::new(&mut out, size, size); enc.set_color(png::ColorType::Rgba); enc.set_depth(png::BitDepth::Eight);
+      if let Ok(mut w) = enc.write_header() { let _ = w.write_image_data(rgba); } }
     out
+}
+
+/// The menu and launcher icon in the interface's accent (the system accent by default), in every size
+/// desktops ask for. The user's icon folder comes before the system one, so this copy is the one shown.
+pub fn refresh_user_icons() {
+    let [r, g, b, _] = crate::ui::theme::accent_color().to_srgba_unmultiplied();
+    let base = util::data_home().join("icons/hicolor");
+    let stamp = base.join(".wraith-icon");
+    let want = format!("{r:02x}{g:02x}{b:02x}");
+    if std::fs::read_to_string(&stamp).map(|s| s == want).unwrap_or(false) { return; }
+    for size in [16u32, 22, 24, 32, 48, 64, 128, 256, 512] {
+        let dir = base.join(format!("{size}x{size}/apps"));
+        if std::fs::create_dir_all(&dir).is_err() { return; }
+        let _ = std::fs::write(dir.join("wraith.png"), png_of(&crate::ui::icon::tile(size, [0x0B, 0x0A, 0x10], [r, g, b]), size));
+    }
+    let _ = std::fs::write(stamp, want);
+    // GTK reads the folder's change time; KDE picks the new icon up on its next cache rebuild.
+    if util::which("gtk-update-icon-cache").is_some() { util::run_quiet("gtk-update-icon-cache", &["-qtf", &base.to_string_lossy()]); }
 }
 
 /// Autostart at logon (XDG autostart entry), minimised to the tray.

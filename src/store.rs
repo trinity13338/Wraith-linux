@@ -39,6 +39,8 @@ pub fn init() {
         if state.selected().is_none() { state.selected = state.profiles.first().map(|p| p.id.clone()).unwrap_or_default(); }
     }
     state.settings.remove("core");
+    // 0.13.1: routing is always by rules (the «everything through VPN / direct» modes are gone).
+    state.set("mode", "rules".into());
     let _ = STATE.set(Mutex::new(state));
     save();
 }
@@ -162,6 +164,7 @@ pub fn restore(text: &str) -> Result<(), String> {
     let hwid = get().s("hwid");
     state.set("hwid", hwid.into());
     for (k, v) in crate::model::defaults() { state.settings.entry(k).or_insert(v); }
+    state.set("mode", "rules".into());
     if state.selected().is_none() { state.selected = state.profiles.first().map(|p| p.id.clone()).unwrap_or_default(); }
     *get() = state;
     save();

@@ -18,7 +18,7 @@ pub struct Setup { pal: Palette, autostart: bool, desktop: bool, step: Arc<Mutex
 pub fn run() -> eframe::Result<()> {
     // Runs as the user (the desktop entries and settings are the user's); the root step goes through pkexec.
     crate::store::init();
-    let icon = egui::IconData { rgba: crate::ui::icon::rgba(64), width: 64, height: 64 };
+    let icon = crate::ui::app_icon(128);
     let options = eframe::NativeOptions { viewport: egui::ViewportBuilder::default().with_title(crate::tr!("Установка Wraith", "Install Wraith")).with_app_id(crate::ui::APP_ID).with_inner_size([560.0, 440.0]).with_resizable(false).with_icon(Arc::new(icon)), centered: true, ..Default::default() };
     eframe::run_native(crate::tr!("Установка Wraith", "Install Wraith"), options, Box::new(|cc| {
         theme::install_fonts(&cc.egui_ctx);
