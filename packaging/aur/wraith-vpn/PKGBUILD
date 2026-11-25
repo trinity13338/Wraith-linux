@@ -1,6 +1,6 @@
 # Maintainer: trinity13338 <https://github.com/trinity13338>
 pkgname=wraith-vpn
-pkgver=0.13.0
+pkgver=0.13.1
 pkgrel=1
 _xrayver=26.11.9
 pkgdesc="Xray VPN client (VLESS, VMess, Trojan, Shadowsocks, Hysteria2, WireGuard) with TUN and system proxy"
@@ -19,7 +19,7 @@ options=('!lto')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/linux-v$pkgver.tar.gz")
 source_x86_64=("Xray-linux-64-$_xrayver.zip::https://github.com/XTLS/Xray-core/releases/download/v$_xrayver/Xray-linux-64.zip")
 source_aarch64=("Xray-linux-arm64-v8a-$_xrayver.zip::https://github.com/XTLS/Xray-core/releases/download/v$_xrayver/Xray-linux-arm64-v8a.zip")
-sha256sums=('cffc802200642ff1abcea71a65884bfcaff4995b0e45cced7008d8ae41b20f9e')
+sha256sums=('f769da9533dd2ae22b1b368fcff5c481770f6c66967526e64c9b8475e30078c7')
 sha256sums_x86_64=('b651f7e1d9966ee2c1b1ee1bf8b52c72771824d3065dce96bbc8bcc19ed95f82')
 sha256sums_aarch64=('64ed6858982a7f5eb85d88b811089063bd4f17561f4c8f44e0f1dc8e6f6430be')
 
